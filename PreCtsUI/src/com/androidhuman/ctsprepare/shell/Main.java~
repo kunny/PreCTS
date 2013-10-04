@@ -318,7 +318,7 @@ public class Main {
 											if(!automationJarInstalled){
 												log(info.serial, "Installing automation jar...");
 												automationJarInstalled = new AdbCommand().executeSimple(
-														String.format("-s %s push automation/PreCtsAutomator.jar /data/local/tmp", info.serial));
+														String.format("-s %s push automation/PreCTSAutomator.jar /data/local/tmp", info.serial));
 												if(!automationJarInstalled){
 													throw new IllegalStateException("Error installing automation jar.");
 												}
