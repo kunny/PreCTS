@@ -6,7 +6,6 @@ public abstract class AsyncTask<T, U, V> {
 	
 	Thread thread;
 	
-	@SafeVarargs
 	public final void execute(final T... params){
 		Display.getDefault().syncExec(new Runnable(){
 			public void run(){
