@@ -43,8 +43,10 @@ public class Utils {
 		FileChannel source = null;
 		FileChannel dest = null;
 		
-		source = new FileInputStream(inFile).getChannel();
-		dest = new FileOutputStream(outFile).getChannel();
+		FileInputStream fis = new FileInputStream(inFile);
+		FileOutputStream fos = new FileOutputStream(outFile);
+		source = fis.getChannel();
+		dest = fos.getChannel();
 		   
 		dest.transferFrom(source, 0, source.size());
 		 
@@ -52,10 +54,16 @@ public class Utils {
 		if(source!=null){
 			source.close();
 		}
+		if(fis!=null){
+			fis.close();
+		}
 		
 		if(dest!=null){
 			dest.close();
-		  }
+		}
+		if(fos!=null){
+			fos.close();
+		}
 		  
 	}
 	
