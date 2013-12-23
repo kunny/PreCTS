@@ -77,7 +77,7 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 		}
 		
 		UiObject editText = new UiObject(new UiSelector().className("android.widget.EditText"));
-		editText.setText("welcome!"); // Enter password
+		editText.setText("welcomegsm!"); // Enter password
 		
 		UiObject connectButton = new UiObject(new UiSelector().textMatches("Connect"));
 		connectButton.clickAndWaitForNewWindow();

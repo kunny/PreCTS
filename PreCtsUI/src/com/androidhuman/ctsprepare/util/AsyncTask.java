@@ -44,7 +44,7 @@ public abstract class AsyncTask<T, U, V> {
 	}
 	
 	public abstract void onPreExecute();
-	public abstract V doInBackground(@SuppressWarnings("unchecked") T... params);
+	public abstract V doInBackground(T... params);
 	public abstract void onPostExecute(V result);
 	public abstract void onProgressUpdate(U progress);
 }

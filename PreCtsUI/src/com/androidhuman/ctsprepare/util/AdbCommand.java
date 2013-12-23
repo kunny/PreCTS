@@ -44,7 +44,11 @@ public class AdbCommand {
 		Process proc = null;
 		try{
 			if(D){System.out.println("Executing adb command : "+adbCommand);}
-			proc = new ProcessBuilder("cmd", "/c", "adb "+adbCommand).redirectErrorStream(true).start();
+			if(Utils.isWindows()){
+				proc = new ProcessBuilder("cmd", "/c", "adb "+adbCommand).redirectErrorStream(true).start();
+			}else{
+				proc = new ProcessBuilder("adb", adbCommand).redirectErrorStream(true).start();
+			}
 			
 			if(D){System.out.println("Checking for error..");}
 			
@@ -102,7 +106,11 @@ public class AdbCommand {
 		Process proc = null;
 		try{
 			if(D){System.out.println("Executing adb command : "+adbCommand);}
-			proc = new ProcessBuilder("cmd", "/c", "adb "+adbCommand).redirectErrorStream(true).start();
+			if(Utils.isWindows()){
+				proc = new ProcessBuilder("cmd", "/c", "adb "+adbCommand).redirectErrorStream(true).start();
+			}else{
+				proc = new ProcessBuilder("adb", adbCommand).redirectErrorStream(true).start();
+			}
 			
 			if(D){System.out.println("Checking for error..");}
 			InputStream errStream = proc.getErrorStream();

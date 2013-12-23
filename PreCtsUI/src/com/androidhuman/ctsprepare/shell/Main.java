@@ -207,6 +207,8 @@ public class Main {
 												apkPath = "cts_device_admin/4.2/CtsDeviceAdmin.apk";
 											}else if(info.version.contains("4.3")){
 												apkPath = "cts_device_admin/4.3/CtsDeviceAdmin.apk";
+											}else if(info.version.contains("4.4")){
+												apkPath = "cts_device_admin/4.4/CtsDeviceAdmin.apk";
 											}else{
 												throw new IllegalStateException("Not supported version : "+ info.version);
 											}

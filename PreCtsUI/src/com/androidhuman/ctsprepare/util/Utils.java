@@ -67,9 +67,12 @@ public class Utils {
 		  
 	}
 	
+	public static boolean isWindows(){
+		return System.getProperty("os.name").toLowerCase().indexOf("win") >=0 ? true : false;
+	}
+	
 	public static String getSeparator(){
-		boolean isWindows = System.getProperty("os.name").toLowerCase().indexOf("win") >=0 ? true : false;
-		return isWindows ? "\\" : "/";
+		return isWindows() ? "\\" : "/";
 	}
 	
 	public static void copyFile(File inFile, File outFile, ProgressListener listener) {
