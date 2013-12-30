@@ -44,11 +44,13 @@ public class AdbCommand {
 		Process proc = null;
 		try{
 			if(D){System.out.println("Executing adb command : "+adbCommand);}
-			if(Utils.isWindows()){
-				proc = new ProcessBuilder("cmd", "/c", "adb "+adbCommand).redirectErrorStream(true).start();
-			}else{
-				proc = new ProcessBuilder("adb", adbCommand).redirectErrorStream(true).start();
+			String[] cmds = adbCommand.split(" ");
+			String[] c = new String[cmds.length+1];
+			c[0] = String.format("%s/platform-tools/adb", Utils.getAdbPath());
+			for(int i=0; i<cmds.length; i++){
+				c[i+1] = cmds[i];
 			}
+			proc = new ProcessBuilder(c).redirectErrorStream(true).start();
 			
 			if(D){System.out.println("Checking for error..");}
 			
@@ -106,11 +108,14 @@ public class AdbCommand {
 		Process proc = null;
 		try{
 			if(D){System.out.println("Executing adb command : "+adbCommand);}
-			if(Utils.isWindows()){
-				proc = new ProcessBuilder("cmd", "/c", "adb "+adbCommand).redirectErrorStream(true).start();
-			}else{
-				proc = new ProcessBuilder("adb", adbCommand).redirectErrorStream(true).start();
+			
+			String[] cmds = adbCommand.split(" ");
+			String[] c = new String[cmds.length+1];
+			c[0] = String.format("%s/platform-tools/adb", Utils.getAdbPath());
+			for(int i=0; i<cmds.length; i++){
+				c[i+1] = cmds[i];
 			}
+			proc = new ProcessBuilder(c).redirectErrorStream(true).start();
 			
 			if(D){System.out.println("Checking for error..");}
 			InputStream errStream = proc.getErrorStream();

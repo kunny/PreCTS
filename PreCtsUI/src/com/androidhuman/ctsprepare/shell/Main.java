@@ -1,5 +1,6 @@
 package com.androidhuman.ctsprepare.shell;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -9,11 +10,13 @@ import java.util.NoSuchElementException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
@@ -23,6 +26,8 @@ import org.eclipse.swt.widgets.Text;
 
 import com.androidhuman.ctsprepare.data.BasicDeviceInfo;
 import com.androidhuman.ctsprepare.data.Task;
+import com.androidhuman.ctsprepare.dialog.EditGoogleAccountDialog;
+import com.androidhuman.ctsprepare.dialog.EditSdkPathDialog;
 import com.androidhuman.ctsprepare.util.AdbCommand;
 import com.androidhuman.ctsprepare.util.AdbCommand.AdbCommandException;
 import com.androidhuman.ctsprepare.util.AdbCommand.AdbCommandResultListener;
@@ -33,7 +38,6 @@ import com.androidhuman.ctsprepare.util.Utils;
 
 public class Main {
 	private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	private static final String version = " 1.0";
 
 	protected Shell shlPrects;
 	private Table table;
@@ -58,6 +62,11 @@ public class Main {
 	int currentDevIdx = -1;
 	boolean isInstallBlockDlgDismissed = false;
 	private Text txtLog;
+	private Button btnSetGoogleAccount;
+	
+	private boolean exitApp = false;
+	
+	private AdbCommand cmd = new AdbCommand();
 	
 	/**
 	 * Launch the application.
@@ -78,6 +87,10 @@ public class Main {
 	public void open() {
 		Display display = Display.getDefault();
 		createContents();
+		if(exitApp){
+			shlPrects.close();
+			return;
+		}
 		shlPrects.open();
 		shlPrects.layout();
 		while (!shlPrects.isDisposed()) {
@@ -92,8 +105,8 @@ public class Main {
 	 */
 	protected void createContents() {
 		shlPrects = new Shell();
-		shlPrects.setSize(702, 589);
-		shlPrects.setText("Pre-CTS"+version);
+		shlPrects.setSize(702, 585);
+		shlPrects.setText("Pre-CTS 1.1 (20131227KK)");
 		
 		Group grpOptions = new Group(shlPrects, SWT.NONE);
 		grpOptions.setText("File / Installation");
@@ -106,7 +119,7 @@ public class Main {
 		
 		btnInstallCtsdeviceadminapk = new Button(grpOptions, SWT.CHECK);
 		btnInstallCtsdeviceadminapk.setSelection(true);
-		btnInstallCtsdeviceadminapk.setBounds(10, 24, 176, 16);
+		btnInstallCtsdeviceadminapk.setBounds(10, 24, 292, 16);
 		btnInstallCtsdeviceadminapk.setText("Install CtsDeviceAdmin.apk");
 		
 		table = new Table(shlPrects, SWT.BORDER | SWT.FULL_SELECTION);
@@ -155,10 +168,13 @@ public class Main {
 				final boolean activateCtsDeviceAdmin = btnActivateCtsdeviceadminOn.getSelection();
 				final boolean configureWifi = btnConfigureWifi.getSelection();
 				final boolean configureScreenTimeout = btnConfigureScreenTimeout.getSelection();
+				final boolean setGoogleAccount = btnSetGoogleAccount.getSelection();
 				
 				// Process task list for device
 				new Thread(new Runnable(){
 					public void run(){
+						
+						//AdbCommand cmd = new AdbCommand();
 						
 						try{
 							// for each devices
@@ -183,6 +199,9 @@ public class Main {
 								}
 								if(configureScreenTimeout){
 									taskList.add(new Task(Task.CONFIGURE_SCR_TIMEOUT));
+								}
+								if(setGoogleAccount){
+									taskList.add(new Task(Task.SET_GOOGLE_ACCOUNT));
 								}
 										
 								final int initialTaskCnt = taskList.size();
@@ -249,6 +268,12 @@ public class Main {
 											break;
 											
 										case Task.COPY_MEDIA:
+											// Check have a valid media file (cts_media directory existence)
+											File file = new File("cts_media");
+											if(!file.exists() || !file.isDirectory()){
+												log(info.serial, "[FAIL] Failed to find cts media file in cts_media diretory.");
+												break;
+											}
 											// 1920*1080
 											updateStatusMessage(currentDevIdx, "Copying media (1920x1280)");
 											log(info.serial, "Copying media (1920x1280)");
@@ -328,7 +353,7 @@ public class Main {
 											new AdbCommand().execute(String.format("-s %s shell am start -S \"com.android.settings/.Settings\\$DeviceAdminSettingsActivity\"", info.serial));
 											new AdbCommand().execute(
 													String.format(
-															"-s %s shell uiautomator runtest PreCTSAutomator.jar -c com.androidhuman.ctsprepare.automator.PreCTSAutomate#testActivateDeviceAdmin", 
+															"-s %s shell uiautomator runtest PreCtsAutomator.jar -c com.androidhuman.ctsprepare.automator.PreCTSAutomate#testActivateDeviceAdmin", 
 															info.serial), 
 													new AdbCommandResultListener(){
 
@@ -360,7 +385,7 @@ public class Main {
 											if(!automationJarInstalled){
 												log(info.serial, "Installing automation jar...");
 												automationJarInstalled = new AdbCommand().executeSimple(
-														String.format("-s %s push automation/PreCTSAutomator.jar /data/local/tmp", info.serial));
+														String.format("-s %s push automation/PreCtsAutomator.jar /data/local/tmp", info.serial));
 												if(!automationJarInstalled){
 													throw new IllegalStateException("Error installing automation jar.");
 												}
@@ -368,7 +393,7 @@ public class Main {
 											new AdbCommand().execute(String.format("-s %s shell am start -a android.settings.WIFI_SETTINGS", info.serial));
 											new AdbCommand().execute(
 													String.format(
-															"-s %s shell uiautomator runtest PreCTSAutomator.jar -c com.androidhuman.ctsprepare.automator.PreCTSAutomate#testActivateWifi", 
+															"-s %s shell uiautomator runtest PreCtsAutomator.jar -c com.androidhuman.ctsprepare.automator.PreCTSAutomate#testActivateWifi", 
 															info.serial), 
 													new AdbCommandResultListener(){
 
@@ -400,7 +425,7 @@ public class Main {
 											if(!automationJarInstalled){
 												log(info.serial, "Installing automation jar...");
 												automationJarInstalled = new AdbCommand().executeSimple(
-														String.format("-s %s push automation/PreCTSAutomator.jar /data/local/tmp", info.serial));
+														String.format("-s %s push automation/PreCtsAutomator.jar /data/local/tmp", info.serial));
 												if(!automationJarInstalled){
 													throw new IllegalStateException("Error installing automation jar.");
 												}
@@ -408,7 +433,56 @@ public class Main {
 											new AdbCommand().execute(String.format("-s %s shell am start -a android.settings.DISPLAY_SETTINGS", info.serial));
 											new AdbCommand().execute(
 													String.format(
-															"-s %s shell uiautomator runtest PreCTSAutomator.jar -c com.androidhuman.ctsprepare.automator.PreCTSAutomate#testSetTimeout", 
+															"-s %s shell uiautomator runtest PreCtsAutomator.jar -c com.androidhuman.ctsprepare.automator.PreCTSAutomate#testSetTimeout", 
+															info.serial), 
+													new AdbCommandResultListener(){
+
+												@Override
+												public void onPreExecute() {
+													log(info.serial, task.toString()+" started");
+												}
+
+												@Override
+												public void onError(
+														String errmsg) {
+													log(info.serial, errmsg);
+												}
+
+												@Override
+												public void onOutput(String line) {
+													log(info.serial, line);
+												}
+
+												@Override
+												public void onSuccess() {
+													log(info.serial, task.toString()+" finished");
+												}
+												
+											});
+											break;
+											
+										case Task.SET_GOOGLE_ACCOUNT:
+											if(!automationJarInstalled){
+												log(info.serial, "Installing automation jar...");
+												automationJarInstalled = cmd.executeSimple(
+														String.format("-s %s push automation/PreCtsAutomator.jar /data/local/tmp", info.serial));
+												if(!automationJarInstalled){
+													throw new IllegalStateException("Error installing automation jar.");
+												}
+											}
+											// Push information file
+											boolean accountPushed = new AdbCommand().executeSimple(String.format("-s %s push automation/account.info /data/local/tmp", info.serial));
+											if(!accountPushed){
+												log(info.serial, "[FAIL] Failed to push account information file on device.");
+												return;
+											}
+											
+											// Show add account activity
+											cmd.execute(String.format("-s %s shell am start -a android.settings.ADD_ACCOUNT_SETTINGS", info.serial));
+											// Start automation task
+											cmd.execute(
+													String.format(
+															"-s %s shell uiautomator runtest PreCtsAutomator.jar -c com.androidhuman.ctsprepare.automator.PreCTSAutomate#testAddGoogleAccount", 
 															info.serial), 
 													new AdbCommandResultListener(){
 
@@ -483,7 +557,7 @@ public class Main {
 		progressBar.setBounds(9, 360, 398, 17);
 		
 		lblReady = new Label(shlPrects, SWT.NONE);
-		lblReady.setBounds(10, 383, 242, 15);
+		lblReady.setBounds(10, 383, 242, 27);
 		lblReady.setText("Ready");
 		
 		Group grpAutomation = new Group(shlPrects, SWT.NONE);
@@ -491,7 +565,7 @@ public class Main {
 		grpAutomation.setBounds(328, 10, 348, 118);
 		
 		btnActivateCtsdeviceadminOn = new Button(grpAutomation, SWT.CHECK);
-		btnActivateCtsdeviceadminOn.setBounds(10, 24, 227, 16);
+		btnActivateCtsdeviceadminOn.setBounds(10, 24, 328, 16);
 		btnActivateCtsdeviceadminOn.setSelection(true);
 		btnActivateCtsdeviceadminOn.setText("Activate CtsDeviceAdmin on device");
 		
@@ -501,9 +575,14 @@ public class Main {
 		btnConfigureWifi.setText("Configure Wi-Fi");
 		
 		btnConfigureScreenTimeout = new Button(grpAutomation, SWT.CHECK);
-		btnConfigureScreenTimeout.setBounds(10, 68, 176, 16);
+		btnConfigureScreenTimeout.setBounds(10, 68, 328, 16);
 		btnConfigureScreenTimeout.setSelection(true);
 		btnConfigureScreenTimeout.setText("Configure screen timeout");
+		
+		btnSetGoogleAccount = new Button(grpAutomation, SWT.CHECK);
+		btnSetGoogleAccount.setSelection(true);
+		btnSetGoogleAccount.setBounds(10, 84, 262, 24);
+		btnSetGoogleAccount.setText("Set Google account");
 		
 		btnRefresh = new Button(shlPrects, SWT.NONE);
 		btnRefresh.setBounds(419, 360, 121, 38);
@@ -513,7 +592,7 @@ public class Main {
 				refreshDeviceList();
 			}
 		});
-		btnRefresh.setText("Refresh device list");
+		btnRefresh.setText("Refresh");
 		
 		progressBar_1 = new ProgressBar(shlPrects, SWT.INDETERMINATE);
 		progressBar_1.setVisible(false);
@@ -522,6 +601,56 @@ public class Main {
 		txtLog = new Text(shlPrects, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
 		txtLog.setBounds(10, 415, 666, 126);
 		
+		Menu menu = new Menu(shlPrects, SWT.BAR);
+		shlPrects.setMenuBar(menu);
+		
+		MenuItem mntmSettings = new MenuItem(menu, SWT.CASCADE);
+		mntmSettings.setText("Settings");
+		
+		Menu menu_1 = new Menu(mntmSettings);
+		mntmSettings.setMenu(menu_1);
+		
+		MenuItem mntmSetGoogleAccount = new MenuItem(menu_1, SWT.NONE);
+		mntmSetGoogleAccount.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				new EditGoogleAccountDialog(shlPrects, SWT.NONE).open();
+			}
+		});
+		mntmSetGoogleAccount.setText("Set Google account...");
+		
+		new MenuItem(menu_1, SWT.SEPARATOR);
+		
+		MenuItem mntmSetAndroidSdk = new MenuItem(menu_1, SWT.NONE);
+		mntmSetAndroidSdk.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				new EditSdkPathDialog(shlPrects, SWT.NONE).open();
+			}
+		});
+		mntmSetAndroidSdk.setText("Set Android SDK Path...");
+		
+		// Reposition shell
+		Rectangle bounds = Display.getCurrent().getBounds();
+		Rectangle shlBounds = shlPrects.getBounds();
+		
+		int newX = (bounds.width/2) - (shlBounds.width/2);
+		int newY = (bounds.height/2) - (shlBounds.height/2);
+		
+		shlPrects.setLocation(newX, newY);
+		
+		// Check SDK location
+		
+		while(Utils.getAdbPath()==null){
+			if(Utils.showYesNoMessageBox(
+					shlPrects, 
+					"Android SDK location is not set. Set now?\n(Pressing no will quit the application)")){
+				new EditSdkPathDialog(shlPrects, SWT.NONE).open();
+			}else{
+				exitApp = true;
+				break;
+			}
+		}
 	}
 	
 	private void log(final String msg){
@@ -577,9 +706,9 @@ public class Main {
 							for(BasicDeviceInfo info : deviceList){
 								// Create table entry
 								TableItem item = new TableItem(table, SWT.NULL);
-								item.setText(0, info.serial);
-								item.setText(1, info.model);
-								item.setText(2, info.version);
+								item.setText(0, info.serial==null ? "Unknown" : info.serial);
+								item.setText(1, info.model==null ? "Unknown" : info.model);
+								item.setText(2, info.version==null ? "Unknown" : info.version);
 								item.setText(3, "N/A");
 								item.setText(4, "Ready");
 							}
@@ -621,5 +750,4 @@ public class Main {
 			}
 		});
 	}
-	
 }

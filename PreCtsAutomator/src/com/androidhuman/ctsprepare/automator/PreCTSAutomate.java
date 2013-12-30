@@ -1,5 +1,12 @@
 package com.androidhuman.ctsprepare.automator;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+
+import org.json.JSONException;
+
 import com.android.uiautomator.core.UiDevice;
 import com.android.uiautomator.core.UiObject;
 import com.android.uiautomator.core.UiObjectNotFoundException;
@@ -95,6 +102,92 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 		UiObject timeoutItem = new UiObject(new UiSelector().textContains("10 min"));
 		timeoutItem.clickAndWaitForNewWindow();
 		
+		UiDevice.getInstance().pressHome();
+	}
+	
+	public void testAddGoogleAccount() throws UiObjectNotFoundException{
+		File file = new File("/data/local/tmp/account.info");
+		
+		BufferedReader reader = null;
+		GoogleAccount account = null;
+		try{
+			reader = new BufferedReader(new FileReader(file));
+			String line = reader.readLine();
+			account = GoogleAccount.fromJson(line);
+		}catch(IOException e){
+			fail(e.getMessage());
+		}catch(JSONException e){
+			fail(e.getMessage());
+		}
+		
+		UiScrollable accountTypeList = new UiScrollable(new UiSelector().className("android.widget.ListView"));
+		UiObject google = accountTypeList.getChildByText(new UiSelector().className("android.widget.LinearLayout"), "Google");
+		
+		// Select 'Google'
+		google.clickAndWaitForNewWindow();
+		
+		// Find 'Existing' button
+		UiObject existingButton = new UiObject(new UiSelector().textMatches("Existing"));
+		existingButton.clickAndWaitForNewWindow();
+		
+		// Press 'OK' button if additional dialog(Samsung keyboard) appeared
+		try{
+			UiObject okBtn = new UiObject(new UiSelector().textContains("OK"));
+			okBtn.clickAndWaitForNewWindow(1500);
+		}catch(UiObjectNotFoundException e){
+			System.out.println("Additional dialog not appeared");
+		}
+		
+		// Find 'Email' field
+		UiObject email = new UiObject(new UiSelector().textContains("Email"));
+		email.click();
+		email.setText(account.email);
+		
+		// Find 'Password' Field
+		UiObject password = new UiObject(new UiSelector().className(android.widget.EditText.class).instance(1));
+		password.click();
+		password.setText(account.password);
+		
+		UiObject nextBtn = new UiObject(new UiSelector().description("Next"));
+		nextBtn.clickAndWaitForNewWindow();
+		
+		// Find terms of service 'OK' button
+		UiObject tosOk = new UiObject(new UiSelector().textMatches("OK"));
+		tosOk.clickAndWaitForNewWindow();
+		
+		// Skip Google+ signup
+		try{
+			UiObject skipGp = new UiObject(new UiSelector().textMatches("Not now"));
+			skipGp.clickAndWaitForNewWindow(1500);
+		}catch(UiObjectNotFoundException e){
+			System.out.println("Google+ signup has already done");
+		}
+		
+		// Proceed to next (Google Services)
+		try{
+			UiObject skipGs = new UiObject(new UiSelector().description("Next"));
+			skipGs.clickAndWaitForNewWindow(1500);
+		}catch(UiObjectNotFoundException e){
+			System.out.println("Google services screen not found");
+		}
+		
+		// Skip Entertainment
+		try{
+			UiObject skipEnt = new UiObject(new UiSelector().textMatches("Not now"));
+			skipEnt.clickAndWaitForNewWindow(1500);
+		}catch(UiObjectNotFoundException e){
+			System.out.println("Payment setup has already done");
+		}
+		
+		// Proceed final step (Account sign-in successful)
+		try{
+			UiObject finalNext = new UiObject(new UiSelector().description("Next"));
+			finalNext.clickAndWaitForNewWindow(1500);
+		}catch(UiObjectNotFoundException e){
+			System.out.println("Account setup confirmation screen not found");
+		}
+		
+		// Finished!
 		UiDevice.getInstance().pressHome();
 	}
 }

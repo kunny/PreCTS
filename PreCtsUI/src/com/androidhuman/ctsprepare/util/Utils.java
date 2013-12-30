@@ -1,8 +1,11 @@
 package com.androidhuman.ctsprepare.util;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 
@@ -37,6 +40,14 @@ public class Utils {
 		msg.setText("Information");
 		msg.setMessage(message);
 		msg.open();
+	}
+	
+	public static boolean showYesNoMessageBox(Shell shell, String message){
+		MessageBox msg = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.YES | SWT.NO);
+		msg.setText("Question");
+		msg.setMessage(message);
+		int result = msg.open();
+		return result==SWT.YES;
 	}
 	
 	public static void copyFile(File inFile, File outFile) throws IOException{
@@ -100,5 +111,54 @@ public class Utils {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static void setAdbPath(String path) throws IllegalArgumentException{
+		File file = new File(path);
+		
+		if(!file.isDirectory()){
+			throw new IllegalArgumentException("Not a valid directory.");
+		}
+		
+		// Check adb executable existence
+		File adb = new File(path+"/platform-tools/adb");
+		if(!adb.exists() || !adb.isFile()){
+			throw new IllegalArgumentException("adb binary not found. Try download the SDK again.");
+		}
+		
+		// adb is placed in right place
+		FileWriter writer = null;
+		try{
+			writer = new FileWriter("environment.info");
+			writer.write(path);
+		}catch(IOException e){
+			e.printStackTrace();
+		}finally{
+			if(writer!=null){
+				try{ writer.close(); }catch(IOException e){}
+			}
+		}
+	}
+	
+	public static String getAdbPath(){
+		String path = null;
+		File file = new File("environment.info");
+		if(!file.exists()){
+			return null;
+		}
+		
+		BufferedReader reader = null;
+		
+		try{
+			reader = new BufferedReader(new FileReader(file));
+			path = reader.readLine();
+		}catch(IOException e){
+			e.printStackTrace();
+		}finally{
+			if(reader!=null){
+				try{ reader.close(); }catch(IOException e){}
+			}
+		}
+		return path;
 	}
 }

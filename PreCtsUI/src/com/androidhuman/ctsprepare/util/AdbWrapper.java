@@ -169,6 +169,7 @@ public class AdbWrapper{
 			@Override
 			public void onOutput(String line) {
 				if(line.contains("List of devices") || line.length()==0){
+					//onError(line);
 					return;
 				}
 				String[] elems = line.split("\t");

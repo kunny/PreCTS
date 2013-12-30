@@ -1,0 +1,51 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'application'
+
+repositories{
+	mavenCentral()
+}
+
+sourceSets{
+	main{
+		java{
+			srcDir 'src'
+		}
+	}
+}
+
+String osName;
+String archName;
+
+switch(System.getProperty('os.name').toLowerCase()){
+	case 'windows':
+		osName = 'win32';
+		break;
+	case 'linux':
+		osName = 'gtk-linux';
+		break;
+	case 'cocoa':
+		osName = 'cocoa-macosx';
+		break;
+	default:
+		throw new Exception('Unsupported OS');
+}
+
+switch(System.getProperty('os.arch').toLowerCase()){
+	case 'amd64':
+		archName = 'x86_64';
+		break;
+	case 'i386':
+	case 'x86':
+		archName = 'x86';
+		break;
+	default:
+		throw new Exception('Unsupported OS');
+}
+
+mainClassName = "com.androidhuman.ctsprepare.shell.Main"
+
+dependencies {
+	compile 'com.googlecode.json-simple:json-simple:1.1'
+	compile fileTree(dir: 'swt_lib', include: "swt-4.3-"+osName+"-"+archName+".jar")
+}

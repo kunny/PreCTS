@@ -6,6 +6,7 @@ public final class Task {
 	public static final int ACTIVATE_DEV_ADMIN = 0xff002;
 	public static final int CONFIGURE_WIFI = 0xff003;
 	public static final int CONFIGURE_SCR_TIMEOUT = 0xff004;
+	public static final int SET_GOOGLE_ACCOUNT = 0xff005;
 	
 	public int type = -1; // Not assigned by default
 	
@@ -30,6 +31,8 @@ public final class Task {
 			return "Configure Wi-Fi";
 		case CONFIGURE_SCR_TIMEOUT:
 			return "Configure screen timeout";
+		case SET_GOOGLE_ACCOUNT:
+			return "Set Google Account";
 		default:
 			throw new IllegalArgumentException("Unknown task type");
 		}
