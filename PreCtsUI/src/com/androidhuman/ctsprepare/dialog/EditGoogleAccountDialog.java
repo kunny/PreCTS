@@ -63,7 +63,7 @@ public class EditGoogleAccountDialog extends Dialog {
 	 * Create contents of the dialog.
 	 */
 	private void createContents() {
-		shlGoogleAccount = new Shell(getParent(), SWT.SHELL_TRIM);
+		shlGoogleAccount = new Shell(getParent(), SWT.CLOSE | SWT.MIN | SWT.TITLE);
 		shlGoogleAccount.setSize(373, 136);
 		shlGoogleAccount.setText("Google account");
 		

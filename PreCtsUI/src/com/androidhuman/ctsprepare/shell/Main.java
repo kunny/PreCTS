@@ -105,8 +105,8 @@ public class Main {
 	 */
 	protected void createContents() {
 		shlPrects = new Shell();
-		shlPrects.setSize(702, 585);
-		shlPrects.setText("Pre-CTS 1.1 (20131227KK)");
+		shlPrects.setSize(702, 611);
+		shlPrects.setText("Pre-CTS 1.2 (20131230KK)");
 		
 		Group grpOptions = new Group(shlPrects, SWT.NONE);
 		grpOptions.setText("File / Installation");
@@ -462,6 +462,11 @@ public class Main {
 											break;
 											
 										case Task.SET_GOOGLE_ACCOUNT:
+											File f = new File("automation/account.info");
+											if(!f.exists() || f.length()==0){
+												log(info.serial, "Google account info missing");
+												break;
+											}
 											if(!automationJarInstalled){
 												log(info.serial, "Installing automation jar...");
 												automationJarInstalled = cmd.executeSimple(

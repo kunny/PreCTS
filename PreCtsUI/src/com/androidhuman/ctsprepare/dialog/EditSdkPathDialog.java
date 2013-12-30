@@ -49,11 +49,11 @@ public class EditSdkPathDialog extends Dialog {
 	 * Create contents of the dialog.
 	 */
 	private void createContents() {
-		shell = new Shell(getParent(), SWT.SHELL_TRIM);
+		shell = new Shell(getParent(), SWT.CLOSE | SWT.MIN | SWT.TITLE);
 		shell.setSize(450, 151);
 		shell.setText(getText());
 		
-		txtSdkPath = new Text(shell, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
+		txtSdkPath = new Text(shell, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP | SWT.MULTI);
 		txtSdkPath.setEnabled(false);
 		txtSdkPath.setEditable(false);
 		txtSdkPath.setBounds(10, 10, 430, 65);
@@ -70,6 +70,7 @@ public class EditSdkPathDialog extends Dialog {
 						Utils.setAdbPath(path);
 					}catch(Exception e){
 						Utils.showErrorMessage(shell, e.getMessage());
+						return;
 					}
 				}
 				txtSdkPath.setText(path);

@@ -121,7 +121,12 @@ public class Utils {
 		}
 		
 		// Check adb executable existence
-		File adb = new File(path+"/platform-tools/adb");
+		String separator = getSeparator();
+		StringBuilder b = new StringBuilder().append(path).append(separator).append("platform-tools").append(separator).append("adb");
+		if(isWindows()){
+			b.append(".exe");
+		}
+		File adb = new File(b.toString());
 		if(!adb.exists() || !adb.isFile()){
 			throw new IllegalArgumentException("adb binary not found. Try download the SDK again.");
 		}

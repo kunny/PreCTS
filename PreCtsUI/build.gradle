@@ -1,5 +1,4 @@
 apply plugin: 'java'
-apply plugin: 'eclipse'
 apply plugin: 'application'
 
 repositories{
@@ -7,12 +6,15 @@ repositories{
 }
 
 sourceSets{
+
 	main{
 		java{
 			srcDir 'src'
 		}
 	}
+
 }
+
 
 String osName;
 String archName;
@@ -44,6 +46,7 @@ switch(System.getProperty('os.arch').toLowerCase()){
 }
 
 mainClassName = "com.androidhuman.ctsprepare.shell.Main"
+outputDir = "myout"
 
 dependencies {
 	compile 'com.googlecode.json-simple:json-simple:1.1'
