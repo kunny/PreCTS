@@ -132,10 +132,20 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 		
 		// Press 'OK' button if additional dialog(Samsung keyboard) appeared
 		try{
-			UiObject okBtn = new UiObject(new UiSelector().textContains("OK"));
-			okBtn.clickAndWaitForNewWindow(1500);
+			System.out.println("Trying to dismiss Samsung keyboard popup...");
+			UiObject okBtn = new UiObject(new UiSelector().textMatches("OK"));
+			okBtn.clickAndWaitForNewWindow(1000);
 		}catch(UiObjectNotFoundException e){
 			System.out.println("Additional dialog not appeared");
+		}
+		
+		// Press 'Dismiss' button if additional dialog(Keyboard tips) appeared
+		try{
+			System.out.println("Trying to dismiss Samsung keyboard tips...");
+			UiObject dismissBtn = new UiObject(new UiSelector().textMatches("Dismiss"));
+			dismissBtn.clickAndWaitForNewWindow(1000);
+		}catch(UiObjectNotFoundException e){
+			System.out.println("Additional dialog not appeared.");
 		}
 		
 		// Find 'Email' field
