@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import org.json.JSONException;
 
+import com.android.uiautomator.core.Configurator;
 import com.android.uiautomator.core.UiDevice;
 import com.android.uiautomator.core.UiObject;
 import com.android.uiautomator.core.UiObjectNotFoundException;
@@ -49,6 +50,9 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 	}
 	
 	public void testActivateWifi() throws UiObjectNotFoundException {
+		Configurator config = Configurator.getInstance();
+		config.setWaitForSelectorTimeout(2000); // Set UI wait timeout for 2 seconds
+		
 		UiObject wifiSwitch = new UiObject(new UiSelector().className("android.widget.Switch"));
 		if(!wifiSwitch.isChecked()){
 			wifiSwitch.clickAndWaitForNewWindow();
@@ -67,24 +71,19 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 		}
 		ap.clickAndWaitForNewWindow();
 		
-		// If input method dialog popup showed up
-		try{
-			UiObject okButton = new UiObject(new UiSelector().textMatches("OK"));
-			okButton.clickAndWaitForNewWindow(1000);
-		}catch(UiObjectNotFoundException e){
-			// No dialog showed up
-		}
+		while(true){
+			
+			try{
+				UiObject editText = new UiObject(new UiSelector().className("android.widget.EditText"));
+				editText.setText("welcomegsm!"); // Enter password
+				break;
+			}catch(UiObjectNotFoundException e){
+				System.out.println("Dialog found. trying to dismiss...");
+			}
+			
+			skipAdditionalDialogs();
 		
-		// If swype instruction dialog popup showed up
-		try{
-			UiObject okButton = new UiObject(new UiSelector().textMatches("Dismiss"));
-			okButton.clickAndWaitForNewWindow(1000);
-		}catch(UiObjectNotFoundException e){
-			// No dialog showed up
 		}
-		
-		UiObject editText = new UiObject(new UiSelector().className("android.widget.EditText"));
-		editText.setText("welcomegsm!"); // Enter password
 		
 		UiObject connectButton = new UiObject(new UiSelector().textMatches("Connect"));
 		connectButton.clickAndWaitForNewWindow();
@@ -106,6 +105,9 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 	}
 	
 	public void testAddGoogleAccount() throws UiObjectNotFoundException{
+		Configurator config = Configurator.getInstance();
+		config.setWaitForSelectorTimeout(2000); // Set UI wait timeout for 2 seconds
+		
 		File file = new File("/data/local/tmp/account.info");
 		
 		BufferedReader reader = null;
@@ -130,33 +132,25 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 		UiObject existingButton = new UiObject(new UiSelector().textMatches("Existing"));
 		existingButton.clickAndWaitForNewWindow();
 		
-		// Press 'OK' button if additional dialog(Samsung keyboard) appeared
-		try{
-			System.out.println("Trying to dismiss Samsung keyboard popup...");
-			UiObject okBtn = new UiObject(new UiSelector().textMatches("OK"));
-			okBtn.clickAndWaitForNewWindow(1000);
-		}catch(UiObjectNotFoundException e){
-			System.out.println("Additional dialog not appeared");
+		while(true){
+			try{
+				// Find 'Email' field
+				UiObject email = new UiObject(new UiSelector().textContains("Email"));
+				email.click();
+				email.setText(account.email);
+				
+				// Find 'Password' Field
+				UiObject password = new UiObject(new UiSelector().className(android.widget.EditText.class).instance(1));
+				password.click();
+				password.setText(account.password);
+				
+				break;
+			}catch(UiObjectNotFoundException e){
+				System.out.println("Dialog found. trying to dismiss...");
+			}
+			
+			skipAdditionalDialogs();
 		}
-		
-		// Press 'Dismiss' button if additional dialog(Keyboard tips) appeared
-		try{
-			System.out.println("Trying to dismiss Samsung keyboard tips...");
-			UiObject dismissBtn = new UiObject(new UiSelector().textMatches("Dismiss"));
-			dismissBtn.clickAndWaitForNewWindow(1000);
-		}catch(UiObjectNotFoundException e){
-			System.out.println("Additional dialog not appeared.");
-		}
-		
-		// Find 'Email' field
-		UiObject email = new UiObject(new UiSelector().textContains("Email"));
-		email.click();
-		email.setText(account.email);
-		
-		// Find 'Password' Field
-		UiObject password = new UiObject(new UiSelector().className(android.widget.EditText.class).instance(1));
-		password.click();
-		password.setText(account.password);
 		
 		UiObject nextBtn = new UiObject(new UiSelector().description("Next"));
 		nextBtn.clickAndWaitForNewWindow();
@@ -200,4 +194,27 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 		// Finished!
 		UiDevice.getInstance().pressHome();
 	}
+	
+	private void skipAdditionalDialogs(){
+		UiObject dismissDlgBtn = null;
+		
+		try{
+			// If input method dialog popup showed up
+			dismissDlgBtn = new UiObject(new UiSelector().textMatches("OK"));
+			dismissDlgBtn.clickAndWaitForNewWindow(1000);
+		}catch(UiObjectNotFoundException e){}
+		
+		try{
+			// If swype instruction dialog popup showed up
+			dismissDlgBtn = new UiObject(new UiSelector().textMatches("Dismiss"));
+			dismissDlgBtn.clickAndWaitForNewWindow(1000);
+		}catch(UiObjectNotFoundException e){}
+	
+		try{
+			// Wi-Fi calling
+			dismissDlgBtn = new UiObject(new UiSelector().textMatches("Skip"));
+			dismissDlgBtn.clickAndWaitForNewWindow(1000);
+		}catch(UiObjectNotFoundException e){}
+	}
+	
 }
