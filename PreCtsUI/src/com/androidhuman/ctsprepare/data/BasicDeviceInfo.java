@@ -11,5 +11,15 @@ public class BasicDeviceInfo {
 	public String toString() {
 		return "BasicDeviceInfo [serial=" + serial + ", model=" + model + "]";
 	}
+	
+	/**
+	 * To support Configuration class while running automation,
+	 * minimum 4.3 version is required. (API Level 18)
+	 * @return
+	 */
+	public boolean isAutomationSupported(){
+		Float version = Float.valueOf(this.version);
+		return version >= 4.3f ? true : false;
+	}
 
 }

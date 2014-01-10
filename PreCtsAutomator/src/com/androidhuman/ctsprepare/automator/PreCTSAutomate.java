@@ -53,6 +53,20 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 		Configurator config = Configurator.getInstance();
 		config.setWaitForSelectorTimeout(2000); // Set UI wait timeout for 2 seconds
 		
+		File file = new File("/data/local/tmp/wifi.info");
+		
+		BufferedReader reader = null;
+		WifiAp apData = null;
+		try{
+			reader = new BufferedReader(new FileReader(file));
+			String line = reader.readLine();
+			apData = WifiAp.fromJson(line);
+		}catch(IOException e){
+			fail(e.getMessage());
+		}catch(JSONException e){
+			fail(e.getMessage());
+		}
+		
 		UiObject wifiSwitch = new UiObject(new UiSelector().className("android.widget.Switch"));
 		if(!wifiSwitch.isChecked()){
 			wifiSwitch.clickAndWaitForNewWindow();
@@ -63,7 +77,8 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 		while(true){
 			try{
 				// Select AP
-				ap = wifiList.getChildByText(new UiSelector().className("android.widget.LinearLayout"), "AndroidNet");
+				ap = wifiList.getChildByText(
+						new UiSelector().className("android.widget.LinearLayout"), apData.apName);
 				break;
 			}catch(UiObjectNotFoundException e){
 				UiDevice.getInstance().waitForWindowUpdate("com.android.settings", 1500);
@@ -75,7 +90,7 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 			
 			try{
 				UiObject editText = new UiObject(new UiSelector().className("android.widget.EditText"));
-				editText.setText("welcomegsm!"); // Enter password
+				editText.setText(apData.password); // Enter password
 				break;
 			}catch(UiObjectNotFoundException e){
 				System.out.println("Dialog found. trying to dismiss...");

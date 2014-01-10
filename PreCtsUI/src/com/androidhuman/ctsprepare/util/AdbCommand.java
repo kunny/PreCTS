@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import org.eclipse.swt.widgets.Display;
 
 public class AdbCommand {
-	private static final boolean D = false;
+	private static final boolean D = true;
 	
 	private boolean shouldContinue = false;
 	private AdbCommandResultListener mListener;

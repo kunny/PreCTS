@@ -46,7 +46,6 @@ switch(System.getProperty('os.arch').toLowerCase()){
 }
 
 mainClassName = "com.androidhuman.ctsprepare.shell.Main"
-outputDir = "myout"
 
 dependencies {
 	compile 'com.googlecode.json-simple:json-simple:1.1'

@@ -28,6 +28,7 @@ import com.androidhuman.ctsprepare.data.BasicDeviceInfo;
 import com.androidhuman.ctsprepare.data.Task;
 import com.androidhuman.ctsprepare.dialog.EditGoogleAccountDialog;
 import com.androidhuman.ctsprepare.dialog.EditSdkPathDialog;
+import com.androidhuman.ctsprepare.dialog.EditWifiApDialog;
 import com.androidhuman.ctsprepare.util.AdbCommand;
 import com.androidhuman.ctsprepare.util.AdbCommand.AdbCommandException;
 import com.androidhuman.ctsprepare.util.AdbCommand.AdbCommandResultListener;
@@ -106,7 +107,7 @@ public class Main {
 	protected void createContents() {
 		shlPrects = new Shell();
 		shlPrects.setSize(702, 611);
-		shlPrects.setText("Pre-CTS 1.2 (20131230KK)");
+		shlPrects.setText("Pre-CTS 1.2 (20140110KK)");
 		
 		Group grpOptions = new Group(shlPrects, SWT.NONE);
 		grpOptions.setText("File / Installation");
@@ -390,6 +391,14 @@ public class Main {
 													throw new IllegalStateException("Error installing automation jar.");
 												}
 											}
+											
+											// Push information file
+											boolean wifiPushed = new AdbCommand().executeSimple(String.format("-s %s push automation/wifi.info /data/local/tmp", info.serial));
+											if(!wifiPushed){
+												log(info.serial, "[FAIL] Failed to push WiFi information file on device.");
+												return;
+											}
+											
 											new AdbCommand().execute(String.format("-s %s shell am start -a android.settings.WIFI_SETTINGS", info.serial));
 											new AdbCommand().execute(
 													String.format(
@@ -624,6 +633,15 @@ public class Main {
 		});
 		mntmSetGoogleAccount.setText("Set Google account...");
 		
+		MenuItem mntmSetWifiAp = new MenuItem(menu_1, SWT.NONE);
+		mntmSetWifiAp.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				new EditWifiApDialog(shlPrects, SWT.NONE).open();
+			}
+		});
+		mntmSetWifiAp.setText("Set  WiFi AP...");
+		
 		new MenuItem(menu_1, SWT.SEPARATOR);
 		
 		MenuItem mntmSetAndroidSdk = new MenuItem(menu_1, SWT.NONE);
@@ -715,7 +733,7 @@ public class Main {
 								item.setText(1, info.model==null ? "Unknown" : info.model);
 								item.setText(2, info.version==null ? "Unknown" : info.version);
 								item.setText(3, "N/A");
-								item.setText(4, "Ready");
+								item.setText(4, info.serial==null ? "Not available" : "Ready");
 							}
 							
 						}
