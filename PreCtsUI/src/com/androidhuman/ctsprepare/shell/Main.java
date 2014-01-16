@@ -10,7 +10,6 @@ import java.util.NoSuchElementException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
@@ -68,6 +67,7 @@ public class Main {
 	private boolean exitApp = false;
 	
 	private AdbCommand cmd = new AdbCommand();
+	private Button btnSetInternetAsDefault;
 	
 	/**
 	 * Launch the application.
@@ -106,12 +106,12 @@ public class Main {
 	 */
 	protected void createContents() {
 		shlPrects = new Shell();
-		shlPrects.setSize(702, 611);
-		shlPrects.setText("Pre-CTS 1.2 (20140110KK)");
+		shlPrects.setSize(702, 643);
+		shlPrects.setText("Pre-CTS 1.3 (20140116)");
 		
 		Group grpOptions = new Group(shlPrects, SWT.NONE);
 		grpOptions.setText("File / Installation");
-		grpOptions.setBounds(10, 10, 312, 118);
+		grpOptions.setBounds(10, 10, 312, 154);
 		
 		btnCopyMediaFiles = new Button(grpOptions, SWT.CHECK);
 		btnCopyMediaFiles.setSelection(true);
@@ -124,7 +124,7 @@ public class Main {
 		btnInstallCtsdeviceadminapk.setText("Install CtsDeviceAdmin.apk");
 		
 		table = new Table(shlPrects, SWT.BORDER | SWT.FULL_SELECTION);
-		table.setBounds(10, 134, 666, 210);
+		table.setBounds(11, 170, 666, 210);
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
 		
@@ -169,7 +169,8 @@ public class Main {
 				final boolean activateCtsDeviceAdmin = btnActivateCtsdeviceadminOn.getSelection();
 				final boolean configureWifi = btnConfigureWifi.getSelection();
 				final boolean configureScreenTimeout = btnConfigureScreenTimeout.getSelection();
-				final boolean setGoogleAccount = btnSetGoogleAccount.getSelection();
+				final boolean setGoogleAccount = btnSetGoogleAccount.getSelection(); 
+				final boolean setInternetAsDefault = btnSetInternetAsDefault.getSelection();
 				
 				// Process task list for device
 				new Thread(new Runnable(){
@@ -190,7 +191,7 @@ public class Main {
 									taskList.add(new Task(Task.INSTALL_CTS_DEV_ADMIN));
 								}
 								if(copyMediaFiles){
-									taskList.add(new Task(Task.COPY_MEDIA));
+									btnCopyMediaFiles.setSelection(false);
 								}
 								if(activateCtsDeviceAdmin){
 									taskList.add(new Task(Task.ACTIVATE_DEV_ADMIN));
@@ -203,6 +204,9 @@ public class Main {
 								}
 								if(setGoogleAccount){
 									taskList.add(new Task(Task.SET_GOOGLE_ACCOUNT));
+								}
+								if(setInternetAsDefault){
+									taskList.add(new Task(Task.SET_INTERNET_AS_DEFAULT));
 								}
 										
 								final int initialTaskCnt = taskList.size();
@@ -221,16 +225,13 @@ public class Main {
 										switch(task.type){
 										case Task.INSTALL_CTS_DEV_ADMIN:
 											String apkPath = null;
-											if(info.version.contains("4.1")){
-												apkPath = "cts_device_admin/4.1/CtsDeviceAdmin.apk";
-											}else if(info.version.contains("4.2")){
-												apkPath = "cts_device_admin/4.2/CtsDeviceAdmin.apk";
-											}else if(info.version.contains("4.3")){
-												apkPath = "cts_device_admin/4.3/CtsDeviceAdmin.apk";
-											}else if(info.version.contains("4.4")){
-												apkPath = "cts_device_admin/4.4/CtsDeviceAdmin.apk";
-											}else{
-												throw new IllegalStateException("Not supported version : "+ info.version);
+											String versionPre = info.version.substring(0, 3);
+											apkPath = "cts_device_admin/"+versionPre+"/CtsDeviceAdmin.apk";
+											
+											File daFile = new File(apkPath);
+											if(!daFile.exists()){
+												log(info.serial, "[FAIL] CTS Device admin not found on "+daFile.getAbsolutePath());
+												break;
 											}
 											
 											isInstallBlockDlgDismissed = false;
@@ -271,8 +272,11 @@ public class Main {
 										case Task.COPY_MEDIA:
 											// Check have a valid media file (cts_media directory existence)
 											File file = new File("cts_media");
-											if(!file.exists() || !file.isDirectory()){
-												log(info.serial, "[FAIL] Failed to find cts media file in cts_media diretory.");
+											if(!file.exists() || !file.isDirectory() || file.listFiles().length==0){
+												log(info.serial, "[FAIL] Failed to find cts media files in cts_media diretory.");
+												log("Please download CTS Media files from http://s.android.com/compatibility/downloads.html");
+												log("then extract its contents into cts_media directory.");
+												log("For more details, please read README.txt");
 												break;
 											}
 											// 1920*1080
@@ -348,7 +352,7 @@ public class Main {
 												automationJarInstalled = new AdbCommand().executeSimple(
 														String.format("-s %s push automation/PreCtsAutomator.jar /data/local/tmp", info.serial));
 												if(!automationJarInstalled){
-													throw new IllegalStateException("Error installing automation jar.");
+													throw new IllegalStateException("[FAIL] Error installing automation jar.");
 												}
 											}
 											new AdbCommand().execute(String.format("-s %s shell am start -S \"com.android.settings/.Settings\\$DeviceAdminSettingsActivity\"", info.serial));
@@ -436,7 +440,7 @@ public class Main {
 												automationJarInstalled = new AdbCommand().executeSimple(
 														String.format("-s %s push automation/PreCtsAutomator.jar /data/local/tmp", info.serial));
 												if(!automationJarInstalled){
-													throw new IllegalStateException("Error installing automation jar.");
+													throw new IllegalStateException("[FAIL] Error installing automation jar.");
 												}
 											}
 											new AdbCommand().execute(String.format("-s %s shell am start -a android.settings.DISPLAY_SETTINGS", info.serial));
@@ -473,7 +477,7 @@ public class Main {
 										case Task.SET_GOOGLE_ACCOUNT:
 											File f = new File("automation/account.info");
 											if(!f.exists() || f.length()==0){
-												log(info.serial, "Google account info missing");
+												log(info.serial, "[FAIL] Google account info missing");
 												break;
 											}
 											if(!automationJarInstalled){
@@ -523,6 +527,50 @@ public class Main {
 												
 											});
 											break;
+											
+										case Task.SET_INTERNET_AS_DEFAULT:
+											if(!automationJarInstalled){
+												log(info.serial, "Installing automation jar...");
+												automationJarInstalled = cmd.executeSimple(
+														String.format("-s %s push automation/PreCtsAutomator.jar /data/local/tmp", info.serial));
+												if(!automationJarInstalled){
+													throw new IllegalStateException("Error installing automation jar.");
+												}
+											}
+											
+											// Open random site
+											cmd.execute(String.format("-s %s shell am start -a android.intent.action.VIEW -d http://android.com",info.serial));
+											
+											// Start automation task
+											cmd.execute(
+													String.format(
+															"-s %s shell uiautomator runtest PreCtsAutomator.jar -c com.androidhuman.ctsprepare.automator.PreCTSAutomate#testSetInternetAsDefault", 
+															info.serial), 
+													new AdbCommandResultListener(){
+
+												@Override
+												public void onPreExecute() {
+													log(info.serial, task.toString()+" started");
+												}
+
+												@Override
+												public void onError(
+														String errmsg) {
+													log(info.serial, errmsg);
+												}
+
+												@Override
+												public void onOutput(String line) {
+													log(info.serial, line);
+												}
+
+												@Override
+												public void onSuccess() {
+													log(info.serial, task.toString()+" finished");
+												}
+												
+											});
+											break;
 										}
 										
 									}catch(NoSuchElementException e){
@@ -537,7 +585,7 @@ public class Main {
 												"Completed");
 									}
 								});
-								log(info.serial, "Completed");
+								log(info.serial, "All process done.");
 							}
 							Display.getDefault().syncExec(new Runnable(){
 								public void run(){
@@ -564,19 +612,19 @@ public class Main {
 				
 			}
 		});
-		btnStart.setBounds(546, 360, 130, 38);
+		btnStart.setBounds(547, 394, 130, 38);
 		btnStart.setText("Start");
 		
 		progressBar = new ProgressBar(shlPrects, SWT.NONE);
-		progressBar.setBounds(9, 360, 398, 17);
+		progressBar.setBounds(10, 394, 398, 17);
 		
 		lblReady = new Label(shlPrects, SWT.NONE);
-		lblReady.setBounds(10, 383, 242, 27);
+		lblReady.setBounds(11, 417, 242, 27);
 		lblReady.setText("Ready");
 		
 		Group grpAutomation = new Group(shlPrects, SWT.NONE);
 		grpAutomation.setText("Automation");
-		grpAutomation.setBounds(328, 10, 348, 118);
+		grpAutomation.setBounds(328, 10, 348, 154);
 		
 		btnActivateCtsdeviceadminOn = new Button(grpAutomation, SWT.CHECK);
 		btnActivateCtsdeviceadminOn.setBounds(10, 24, 328, 16);
@@ -598,8 +646,13 @@ public class Main {
 		btnSetGoogleAccount.setBounds(10, 84, 262, 24);
 		btnSetGoogleAccount.setText("Set Google account");
 		
+		btnSetInternetAsDefault = new Button(grpAutomation, SWT.CHECK);
+		btnSetInternetAsDefault.setSelection(true);
+		btnSetInternetAsDefault.setBounds(10, 107, 262, 24);
+		btnSetInternetAsDefault.setText("Set Internet as default");
+		
 		btnRefresh = new Button(shlPrects, SWT.NONE);
-		btnRefresh.setBounds(419, 360, 121, 38);
+		btnRefresh.setBounds(420, 394, 121, 38);
 		btnRefresh.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -613,7 +666,7 @@ public class Main {
 		progressBar_1.setBounds(10, 344, 666, 8);
 		
 		txtLog = new Text(shlPrects, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
-		txtLog.setBounds(10, 415, 666, 126);
+		txtLog.setBounds(10, 450, 666, 126);
 		
 		Menu menu = new Menu(shlPrects, SWT.BAR);
 		shlPrects.setMenuBar(menu);
@@ -640,7 +693,7 @@ public class Main {
 				new EditWifiApDialog(shlPrects, SWT.NONE).open();
 			}
 		});
-		mntmSetWifiAp.setText("Set  WiFi AP...");
+		mntmSetWifiAp.setText("Set WiFi AP...");
 		
 		new MenuItem(menu_1, SWT.SEPARATOR);
 		
@@ -652,15 +705,6 @@ public class Main {
 			}
 		});
 		mntmSetAndroidSdk.setText("Set Android SDK Path...");
-		
-		// Reposition shell
-		Rectangle bounds = Display.getCurrent().getBounds();
-		Rectangle shlBounds = shlPrects.getBounds();
-		
-		int newX = (bounds.width/2) - (shlBounds.width/2);
-		int newY = (bounds.height/2) - (shlBounds.height/2);
-		
-		shlPrects.setLocation(newX, newY);
 		
 		// Check SDK location
 		
@@ -773,4 +817,5 @@ public class Main {
 			}
 		});
 	}
+	
 }

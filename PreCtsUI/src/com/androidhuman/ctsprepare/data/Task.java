@@ -7,6 +7,7 @@ public final class Task {
 	public static final int CONFIGURE_WIFI = 0xff003;
 	public static final int CONFIGURE_SCR_TIMEOUT = 0xff004;
 	public static final int SET_GOOGLE_ACCOUNT = 0xff005;
+	public static final int SET_INTERNET_AS_DEFAULT = 0xff006;
 	
 	public int type = -1; // Not assigned by default
 	
@@ -33,6 +34,8 @@ public final class Task {
 			return "Configure screen timeout";
 		case SET_GOOGLE_ACCOUNT:
 			return "Set Google Account";
+		case SET_INTERNET_AS_DEFAULT:
+			return "Set Internet as default";
 		default:
 			throw new IllegalArgumentException("Unknown task type");
 		}

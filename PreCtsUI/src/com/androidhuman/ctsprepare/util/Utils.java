@@ -13,6 +13,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
+import com.androidhuman.ctsprepare.data.ProxySettings;
+
 public class Utils {
 	
 	public interface ProgressListener{
@@ -165,5 +167,66 @@ public class Utils {
 			}
 		}
 		return path;
+	}
+	
+	public static void setProxySettings(ProxySettings settings){
+		if(settings==null){
+			throw new IllegalArgumentException("ProxySettings cannot be null");
+		}
+		File file = new File("proxy.info");
+		FileWriter writer = null;
+		try{
+			if(!file.exists()){
+				file.createNewFile();
+			}
+			writer = new FileWriter(file);
+			writer.write(settings.toJson());
+		}catch(IOException e){
+			e.printStackTrace();
+		}finally{
+			if(writer!=null){
+				try{ writer.close(); }catch(IOException e){}
+			}
+		}
+	}
+	
+	public static ProxySettings getProxySettings(){
+		File file = new File("proxy.info");
+		ProxySettings settings = null;
+		if(!file.exists()){
+			// Return new ProxySettings
+			settings = new ProxySettings();
+			return settings;
+		}
+		BufferedReader reader = null;
+		try{
+			reader = new BufferedReader(new FileReader(file));
+			settings = ProxySettings.fromJson(reader.readLine());
+		}catch(IOException e){
+			e.printStackTrace();
+		}finally{
+			if(reader!=null){
+				try{ reader.close(); }catch(IOException e){}
+			}
+		}
+		return settings;
+	}
+	
+	public static boolean isCtsMediaExists(){
+		File mediaDir = new File("cts_media");
+		File bbbShort = new File(mediaDir, "bbb_short");
+		File bbbFull = new File(mediaDir, "bbb_full");
+		
+		if(!mediaDir.exists()){
+			return false;
+		}else{
+			if(!bbbShort.exists()){
+				return false;
+			}
+			if(!bbbFull.exists()){
+				return false;
+			}
+		}
+		return true;
 	}
 }

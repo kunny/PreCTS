@@ -210,6 +210,31 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 		UiDevice.getInstance().pressHome();
 	}
 	
+	public void testSetInternetAsDefault() throws UiObjectNotFoundException {
+		Configurator config = Configurator.getInstance();
+		config.setWaitForSelectorTimeout(2000); // Set UI wait timeout for 2 seconds
+		
+		// Get installed app list
+		UiScrollable deviceAdminList = 
+				new UiScrollable(new UiSelector().className("android.widget.GridView"));
+		
+		// First device admin receiver
+		UiObject internet = 
+				deviceAdminList.getChildByText(
+						new UiSelector().className("android.widget.LinearLayout"), 
+						"Internet");
+		
+		// select internet
+		internet.click();
+		
+		UiObject alwaysBtn = new UiObject(new UiSelector().text("Always"));
+		alwaysBtn.click();
+		
+		UiObject okBtn = new UiObject(new UiSelector().text("OK"));
+		okBtn.click();
+		
+	}
+	
 	private void skipAdditionalDialogs(){
 		UiObject dismissDlgBtn = null;
 		
