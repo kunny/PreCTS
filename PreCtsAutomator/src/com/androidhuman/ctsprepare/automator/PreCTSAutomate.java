@@ -233,6 +233,9 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 		UiObject okBtn = new UiObject(new UiSelector().text("OK"));
 		okBtn.click();
 		
+		// Done!
+		UiDevice.getInstance().pressHome();
+		
 	}
 	
 	private void skipAdditionalDialogs(){

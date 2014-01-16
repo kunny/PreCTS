@@ -68,12 +68,12 @@ public class EditSdkPathDialog extends Dialog {
 				if(path!=null){
 					try{
 						Utils.setAdbPath(path);
+						txtSdkPath.setText(path);
 					}catch(Exception e){
 						Utils.showErrorMessage(shell, e.getMessage());
 						return;
 					}
 				}
-				txtSdkPath.setText(path);
 			}
 		});
 		btnBrowse.setBounds(10, 81, 107, 27);

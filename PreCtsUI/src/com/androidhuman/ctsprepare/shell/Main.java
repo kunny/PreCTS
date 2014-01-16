@@ -191,7 +191,7 @@ public class Main {
 									taskList.add(new Task(Task.INSTALL_CTS_DEV_ADMIN));
 								}
 								if(copyMediaFiles){
-									btnCopyMediaFiles.setSelection(false);
+									taskList.add(new Task(Task.COPY_MEDIA));
 								}
 								if(activateCtsDeviceAdmin){
 									taskList.add(new Task(Task.ACTIVATE_DEV_ADMIN));
