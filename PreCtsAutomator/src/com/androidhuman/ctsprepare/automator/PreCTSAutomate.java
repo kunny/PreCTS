@@ -7,6 +7,8 @@ import java.io.IOException;
 
 import org.json.JSONException;
 
+import android.os.Build;
+
 import com.android.uiautomator.core.Configurator;
 import com.android.uiautomator.core.UiDevice;
 import com.android.uiautomator.core.UiObject;
@@ -50,8 +52,10 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 	}
 	
 	public void testActivateWifi() throws UiObjectNotFoundException {
-		Configurator config = Configurator.getInstance();
-		config.setWaitForSelectorTimeout(2000); // Set UI wait timeout for 2 seconds
+		if(Build.VERSION.SDK_INT >= 18){
+			Configurator config = Configurator.getInstance();
+			config.setWaitForSelectorTimeout(2000); // Set UI wait timeout for 2 seconds
+		}
 		
 		File file = new File("/data/local/tmp/wifi.info");
 		
@@ -86,21 +90,25 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 		}
 		ap.clickAndWaitForNewWindow();
 		
+		int count = 0;
 		while(true){
-			
 			try{
 				UiObject editText = new UiObject(new UiSelector().className("android.widget.EditText"));
 				editText.setText(apData.password); // Enter password
 				break;
 			}catch(UiObjectNotFoundException e){
+				count++;
 				System.out.println("Dialog found. trying to dismiss...");
+				if(count>3){
+					fail("Could not find authentication dialog.");
+				}
 			}
 			
 			skipAdditionalDialogs();
 		
 		}
 		
-		UiObject connectButton = new UiObject(new UiSelector().textMatches("Connect"));
+		UiObject connectButton = new UiObject(new UiSelector().text("Connect"));
 		connectButton.clickAndWaitForNewWindow();
 		
 		UiDevice.getInstance().pressHome();
@@ -120,8 +128,10 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 	}
 	
 	public void testAddGoogleAccount() throws UiObjectNotFoundException{
-		Configurator config = Configurator.getInstance();
-		config.setWaitForSelectorTimeout(2000); // Set UI wait timeout for 2 seconds
+		if(Build.VERSION.SDK_INT >= 18){
+			Configurator config = Configurator.getInstance();
+			config.setWaitForSelectorTimeout(2000); // Set UI wait timeout for 2 seconds
+		}
 		
 		File file = new File("/data/local/tmp/account.info");
 		
@@ -144,9 +154,10 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 		google.clickAndWaitForNewWindow();
 		
 		// Find 'Existing' button
-		UiObject existingButton = new UiObject(new UiSelector().textMatches("Existing"));
+		UiObject existingButton = new UiObject(new UiSelector().text("Existing"));
 		existingButton.clickAndWaitForNewWindow();
 		
+		int count = 0;
 		while(true){
 			try{
 				// Find 'Email' field
@@ -161,7 +172,12 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 				
 				break;
 			}catch(UiObjectNotFoundException e){
+				count++;
+				if(count>3){
+					fail("Could not find Google account auth screen.");
+				}
 				System.out.println("Dialog found. trying to dismiss...");
+				
 			}
 			
 			skipAdditionalDialogs();
@@ -171,12 +187,12 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 		nextBtn.clickAndWaitForNewWindow();
 		
 		// Find terms of service 'OK' button
-		UiObject tosOk = new UiObject(new UiSelector().textMatches("OK"));
+		UiObject tosOk = new UiObject(new UiSelector().text("OK"));
 		tosOk.clickAndWaitForNewWindow();
 		
 		// Skip Google+ signup
 		try{
-			UiObject skipGp = new UiObject(new UiSelector().textMatches("Not now"));
+			UiObject skipGp = new UiObject(new UiSelector().text("Not now"));
 			skipGp.clickAndWaitForNewWindow(1500);
 		}catch(UiObjectNotFoundException e){
 			System.out.println("Google+ signup has already done");
@@ -192,7 +208,7 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 		
 		// Skip Entertainment
 		try{
-			UiObject skipEnt = new UiObject(new UiSelector().textMatches("Not now"));
+			UiObject skipEnt = new UiObject(new UiSelector().text("Not now"));
 			skipEnt.clickAndWaitForNewWindow(1500);
 		}catch(UiObjectNotFoundException e){
 			System.out.println("Payment setup has already done");
@@ -211,8 +227,10 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 	}
 	
 	public void testSetInternetAsDefault() throws UiObjectNotFoundException {
-		Configurator config = Configurator.getInstance();
-		config.setWaitForSelectorTimeout(2000); // Set UI wait timeout for 2 seconds
+		if(Build.VERSION.SDK_INT >= 18){
+			Configurator config = Configurator.getInstance();
+			config.setWaitForSelectorTimeout(2000); // Set UI wait timeout for 2 seconds
+		}
 		
 		// Get installed app list
 		UiScrollable deviceAdminList = 
@@ -243,19 +261,19 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 		
 		try{
 			// If input method dialog popup showed up
-			dismissDlgBtn = new UiObject(new UiSelector().textMatches("OK"));
+			dismissDlgBtn = new UiObject(new UiSelector().text("OK"));
 			dismissDlgBtn.clickAndWaitForNewWindow(1000);
 		}catch(UiObjectNotFoundException e){}
 		
 		try{
 			// If swype instruction dialog popup showed up
-			dismissDlgBtn = new UiObject(new UiSelector().textMatches("Dismiss"));
+			dismissDlgBtn = new UiObject(new UiSelector().text("Dismiss"));
 			dismissDlgBtn.clickAndWaitForNewWindow(1000);
 		}catch(UiObjectNotFoundException e){}
 	
 		try{
 			// Wi-Fi calling
-			dismissDlgBtn = new UiObject(new UiSelector().textMatches("Skip"));
+			dismissDlgBtn = new UiObject(new UiSelector().text("Skip"));
 			dismissDlgBtn.clickAndWaitForNewWindow(1000);
 		}catch(UiObjectNotFoundException e){}
 	}
