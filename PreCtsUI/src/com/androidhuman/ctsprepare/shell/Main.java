@@ -68,6 +68,7 @@ public class Main {
 	
 	private AdbCommand cmd = new AdbCommand();
 	private Button btnSetInternetAsDefault;
+	private Button btnDisableSyncSettings;
 	
 	/**
 	 * Launch the application.
@@ -171,6 +172,7 @@ public class Main {
 				final boolean configureScreenTimeout = btnConfigureScreenTimeout.getSelection();
 				final boolean setGoogleAccount = btnSetGoogleAccount.getSelection(); 
 				final boolean setInternetAsDefault = btnSetInternetAsDefault.getSelection();
+				final boolean installSettingsApp = btnDisableSyncSettings.getSelection();
 				
 				// Process task list for device
 				new Thread(new Runnable(){
@@ -208,6 +210,9 @@ public class Main {
 								if(setInternetAsDefault){
 									taskList.add(new Task(Task.SET_INTERNET_AS_DEFAULT));
 								}
+								if(installSettingsApp){
+									taskList.add(new Task(Task.DISABLE_MASTER_SYNC));
+								}
 										
 								final int initialTaskCnt = taskList.size();
 								
@@ -220,7 +225,6 @@ public class Main {
 												initialTaskCnt-taskList.size(), initialTaskCnt, task.toString());
 																				
 										boolean result = false;
-										
 										
 										switch(task.type){
 										case Task.INSTALL_CTS_DEV_ADMIN:
@@ -344,6 +348,56 @@ public class Main {
 											if(!result){
 												throw new IllegalStateException("Error copying 480x360 full");
 											}
+											break;
+											
+										case Task.DISABLE_MASTER_SYNC:
+											// 
+											isInstallBlockDlgDismissed = false;
+											new Thread(new Runnable(){
+												public void run(){
+													try {
+														System.out.print("Waiting for dialog popup...");
+														log(info.serial, "Waiting for app verification service popup...");
+														Thread.sleep(5000);
+														if(!isInstallBlockDlgDismissed){
+															// Install block dialog still not dismissed.
+															System.out.print("Attempting dismiss install block dialog...");
+															log(info.serial, "Attempting dialog dismissal...");
+															AdbWrapper wrapper = new AdbWrapper();
+															wrapper.sendKeyCode(info.serial, AdbWrapper.KeyCode.DOWN);
+															Thread.sleep(500);
+															wrapper.sendKeyCode(info.serial, KeyCode.RIGHT);
+															Thread.sleep(500);
+															wrapper.sendKeyCode(info.serial, KeyCode.OK);
+															System.out.println("Done");
+															log(info.serial, "Popup successfully dismissed.");
+														}else{
+															System.out.println("Dialog dismissed or already accepted app verification service.");
+															log(info.serial, "Seems to no popup showed up.");
+														}
+													} catch (InterruptedException e) {
+														e.printStackTrace();
+													}
+												}
+											}).start();
+											
+											log(info.serial, "Installing Sync settings apk...");
+											result = new AdbCommand().executeSimple(String.format("-s %s install %s", info.serial, "automation/PreCtsAndroidSettingsApp.apk"));
+											if(!result){
+												throw new IllegalStateException("Error installing PreCtsAndroidSettings");
+											}
+											// App installed
+											isInstallBlockDlgDismissed = true;			
+											
+											// Launch application
+											log(info.serial, "Launching sync settings...");
+											new AdbCommand().execute(String.format("-s %s shell am start -a com.androidhuman.action.LAUNCH_ANDROID_SETTINGS", info.serial));
+											
+											// Pause for 5 seconds (wait for app to close)
+											try{ Thread.sleep(5000); }catch(Exception e){};
+											
+											// Done! (Nothing to do)
+											log(info.serial, "Disabled sync settings.");
 											break;
 											
 										case Task.ACTIVATE_DEV_ADMIN:
@@ -651,6 +705,11 @@ public class Main {
 		btnSetInternetAsDefault.setBounds(10, 107, 262, 24);
 		btnSetInternetAsDefault.setText("Set Internet as default");
 		
+		btnDisableSyncSettings = new Button(grpAutomation, SWT.CHECK);
+		btnDisableSyncSettings.setSelection(true);
+		btnDisableSyncSettings.setBounds(10, 128, 262, 24);
+		btnDisableSyncSettings.setText("Disable sync settings");
+		
 		btnRefresh = new Button(shlPrects, SWT.NONE);
 		btnRefresh.setBounds(420, 394, 121, 38);
 		btnRefresh.addSelectionListener(new SelectionAdapter() {
@@ -817,5 +876,4 @@ public class Main {
 			}
 		});
 	}
-	
 }

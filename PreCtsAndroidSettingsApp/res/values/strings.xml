@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">PreCTS</string>
+    <string name="msg_disabling_sync_settings">Disabling sync settings...</string>
+    <string name="msg_disabled_sync_settings">Disabled sync settings.</string>
+
+</resources>

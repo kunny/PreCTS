@@ -8,6 +8,7 @@ public final class Task {
 	public static final int CONFIGURE_SCR_TIMEOUT = 0xff004;
 	public static final int SET_GOOGLE_ACCOUNT = 0xff005;
 	public static final int SET_INTERNET_AS_DEFAULT = 0xff006;
+	public static final int DISABLE_MASTER_SYNC = 0xff007;
 	
 	public int type = -1; // Not assigned by default
 	
@@ -36,6 +37,8 @@ public final class Task {
 			return "Set Google Account";
 		case SET_INTERNET_AS_DEFAULT:
 			return "Set Internet as default";
+		case DISABLE_MASTER_SYNC:
+			return "Disabling Sync setting";
 		default:
 			throw new IllegalArgumentException("Unknown task type");
 		}

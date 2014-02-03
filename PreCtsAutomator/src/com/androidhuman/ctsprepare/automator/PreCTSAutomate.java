@@ -87,6 +87,7 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 			}catch(UiObjectNotFoundException e){
 				UiDevice.getInstance().waitForWindowUpdate("com.android.settings", 1500);
 			}
+			skipAdditionalDialogs();
 		}
 		ap.clickAndWaitForNewWindow();
 		
