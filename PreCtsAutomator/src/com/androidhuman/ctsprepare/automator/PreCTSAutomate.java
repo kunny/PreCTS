@@ -87,7 +87,7 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 			}catch(UiObjectNotFoundException e){
 				UiDevice.getInstance().waitForWindowUpdate("com.android.settings", 1500);
 			}
-			skipAdditionalDialogs();
+			skipAdditionalDialogsForWifi();
 		}
 		ap.clickAndWaitForNewWindow();
 		
@@ -277,6 +277,30 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 			dismissDlgBtn = new UiObject(new UiSelector().text("Skip"));
 			dismissDlgBtn.clickAndWaitForNewWindow(1000);
 		}catch(UiObjectNotFoundException e){}
+	}
+	
+	private void skipAdditionalDialogsForWifi(){
+		UiObject dismissDlgBtn = null;
+		
+		try{
+			// Wi-Fi calling
+			dismissDlgBtn = new UiObject(new UiSelector().text("Skip"));
+			dismissDlgBtn.clickAndWaitForNewWindow(1000);
+		}catch(UiObjectNotFoundException e){}
+		
+		try{
+			// If input method dialog popup showed up
+			dismissDlgBtn = new UiObject(new UiSelector().text("OK"));
+			dismissDlgBtn.clickAndWaitForNewWindow(1000);
+		}catch(UiObjectNotFoundException e){}
+		
+		try{
+			// If swype instruction dialog popup showed up
+			dismissDlgBtn = new UiObject(new UiSelector().text("Dismiss"));
+			dismissDlgBtn.clickAndWaitForNewWindow(1000);
+		}catch(UiObjectNotFoundException e){}
+	
+		
 	}
 	
 }
