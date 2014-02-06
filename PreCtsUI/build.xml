@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project name="PreCTS" default="dist">
+    <!--ANT 1.7 is required                                        -->
+
+    <property name="version" value="1.3-20140206"/>
+    <property name="artifactsDir" location="artifacts"/>
+    <property name="distributionDir" location="distributions"/>
+
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+
+    <target name="compileLinuxX86">
+        <mkdir dir="bin"/>
+        <path id="classpath">
+            <pathelement location="libs/json-simple-1.1.1.jar"/>
+            <pathelement location="swt_lib/swt-4.3-gtk-linux-x86.jar"/>
+        </path>
+        <javac destdir="bin" source="1.6" target="1.6" includeantruntime="false">
+            <src path="src"/>
+            <classpath refid="classpath"/>
+        </javac>
+    </target>
+
+    <target name="compileLinuxX64">
+        <mkdir dir="bin"/>
+        <path id="classpath">
+            <pathelement location="libs/json-simple-1.1.1.jar"/>
+            <pathelement location="swt_lib/swt-4.3-gtk-linux-x64.jar"/>
+        </path>
+        <javac destdir="bin" source="1.6" target="1.6" includeantruntime="false">
+            <src path="src"/>
+            <classpath refid="classpath"/>
+        </javac>
+    </target>
+
+    <target name="compileWindowsX86">
+        <mkdir dir="bin"/>
+        <path id="classpath">
+            <pathelement location="libs/json-simple-1.1.1.jar"/>
+            <pathelement location="swt_lib/swt-4.3-win32-x86.jar"/>
+        </path>
+        <javac destdir="bin" source="1.6" target="1.6" includeantruntime="false">
+            <src path="src"/>
+            <classpath refid="classpath"/>
+        </javac>
+    </target>
+
+    <target name="compileWindowsX64">
+        <mkdir dir="bin"/>
+        <path id="classpath">
+            <pathelement location="libs/json-simple-1.1.1.jar"/>
+            <pathelement location="swt_lib/swt-4.3-win32-x64.jar"/>
+        </path>
+        <javac destdir="bin" source="1.6" target="1.6" includeantruntime="false">
+            <src path="src"/>
+            <classpath refid="classpath"/>
+        </javac>
+    </target>
+
+    <target name="copyEssential">
+        <echo message="Copying automation files..."/>
+        <delete dir="${localDir}/automation"/>
+        <mkdir dir="${localDir}/automation"/>
+        <copy file="automation/PreCtsAndroidSettingsApp.apk" todir="${localDir}/automation"/>
+        <copy file="automation/PreCtsAutomator.jar" todir="${localDir}/automation"/>
+
+        <echo message="Copying CtsDeviceAdmin..."/>
+        <delete dir="${localDir}/cts_device_admin"/>
+        <mkdir dir="${localDir}/cts_device_admin"/>
+
+        <mkdir dir="${localDir}/cts_device_admin/4.1"/>
+        <mkdir dir="${localDir}/cts_device_admin/4.2"/>
+        <mkdir dir="${localDir}/cts_device_admin/4.3"/>
+        <mkdir dir="${localDir}/cts_device_admin/4.4"/>
+
+        <copy file="cts_device_admin/4.1/CtsDeviceAdmin.apk" todir="${localDir}/cts_device_admin/4.1"/>
+        <copy file="cts_device_admin/4.2/CtsDeviceAdmin.apk" todir="${localDir}/cts_device_admin/4.2"/>
+        <copy file="cts_device_admin/4.3/CtsDeviceAdmin.apk" todir="${localDir}/cts_device_admin/4.3"/>
+        <copy file="cts_device_admin/4.4/CtsDeviceAdmin.apk" todir="${localDir}/cts_device_admin/4.4"/>
+
+        <copy file="README.txt" todir="${localDir}"/>
+    </target>
+    
+    <target name="copyLib">
+        <property name="libDir" location="${artifactsDir}/${archPlatform}/lib"/>
+        <echo message="arch ${libDir}"/>
+        <delete dir="${libDir}"/>
+        <mkdir dir="${libDir}"/>
+        <copy file="libs/json-simple-1.1.1.jar" todir="${libDir}"/>
+        <copy file="swt_lib/${swtLibName}.jar" todir="${libDir}"/>
+    </target>
+
+    <target name="distLinuxX86" depends="compileLinuxX86">
+        <property name="archPlatform" value="linux-x86"/>
+        <property name="localDir" location="${artifactsDir}/${archPlatform}" />
+        <property name="swtLibName" value="swt-4.3-gtk-linux-x86"/>
+
+        <delete dir="${localDir}"/>
+        <mkdir dir="${localDir}"/>
+
+        <antcall target="copyLib"/>
+        <antcall target="copyEssential"/>
+
+        <mkdir dir="${localDir}/cts_media"/>
+
+        <jar destfile="${localDir}/PreCTS_${archPlatform}.jar">
+            <manifest>
+                <attribute name="Main-Class" value="com.androidhuman.ctsprepare.shell.Main"/>
+                <attribute name="Class-Path" value=". lib/json-simple-1.1.1.jar lib/${swtLibName}.jar"/>
+            </manifest>
+            <fileset dir="bin"/>
+        </jar>
+        
+        <echo file="${localDir}/PreCTS_${archPlatform}" append="true">
+            javaw -jar PreCTS_${archPlatform}.jar
+        </echo>
+        <chmod file="${localDir}/PreCTS_${archPlatform}" perm="544"/>
+
+    </target>
+
+    <target name="distLinuxX64" depends="compileLinuxX64">
+        <property name="archPlatform" value="linux-x64"/>
+        <property name="localDir" location="${artifactsDir}/${archPlatform}" />
+        <property name="swtLibName" value="swt-4.3-gtk-linux-x64"/>
+
+        <delete dir="${localDir}"/>
+        <mkdir dir="${localDir}"/>
+
+        <antcall target="copyLib"/>
+        <antcall target="copyEssential"/>
+
+        <mkdir dir="${localDir}/cts_media"/>
+
+        <jar destfile="${localDir}/PreCTS_${archPlatform}.jar">
+            <manifest>
+                <attribute name="Main-Class" value="com.androidhuman.ctsprepare.shell.Main"/>
+                <attribute name="Class-Path" value=". lib/json-simple-1.1.1.jar lib/${swtLibName}.jar"/>
+            </manifest>
+            <fileset dir="bin"/>
+        </jar>
+        
+        <echo file="${localDir}/PreCTS_${archPlatform}" append="true">
+            javaw -jar PreCTS_${archPlatform}.jar
+        </echo>
+        <chmod file="${localDir}/PreCTS_${archPlatform}" perm="544"/>
+
+    </target>
+
+    <target name="distWindowsX86" depends="compileWindowsX86">
+        <property name="archPlatform" value="windows-x86"/>
+        <property name="localDir" location="${artifactsDir}/${archPlatform}" />
+        <property name="swtLibName" value="swt-4.3-win32-x86"/>
+
+        <delete dir="${localDir}"/>
+        <mkdir dir="${localDir}"/>
+
+        <antcall target="copyLib"/>
+        <antcall target="copyEssential"/>
+
+        <mkdir dir="${localDir}/cts_media"/>
+
+        <jar destfile="${localDir}/PreCTS_${archPlatform}.jar">
+            <manifest>
+                <attribute name="Main-Class" value="com.androidhuman.ctsprepare.shell.Main"/>
+                <attribute name="Class-Path" value=". lib/json-simple-1.1.1.jar lib/${swtLibName}.jar"/>
+            </manifest>
+            <fileset dir="bin"/>
+        </jar>
+
+        <echo file="${localDir}/PreCTS_${archPlatform}.bat" append="true">
+            javaw -jar PreCTS_${archPlatform}.jar
+        </echo>
+    </target>
+
+    <target name="distWindowsX64" depends="compileWindowsX64">
+        <property name="archPlatform" value="windows-x64"/>
+        <property name="localDir" location="${artifactsDir}/${archPlatform}" />
+        <property name="swtLibName" value="swt-4.3-win32-x64"/>
+
+        <delete dir="${localDir}"/>
+        <mkdir dir="${localDir}"/>
+
+        <antcall target="copyLib"/>
+        <antcall target="copyEssential"/>
+
+        <mkdir dir="${localDir}/cts_media"/>
+
+        <jar destfile="${localDir}/PreCTS_${archPlatform}.jar">
+            <manifest>
+                <attribute name="Main-Class" value="com.androidhuman.ctsprepare.shell.Main"/>
+                <attribute name="Class-Path" value=". lib/json-simple-1.1.1.jar lib/${swtLibName}.jar"/>
+            </manifest>
+            <fileset dir="bin"/>
+        </jar>
+
+        <echo file="${localDir}/PreCTS_${archPlatform}.bat" append="true">
+            javaw -jar PreCTS_${archPlatform}.jar
+        </echo>
+    </target>
+
+    <target name="tarArtifacts">
+        <delete file="${distributionDir}/PreCTS_${version}_${archPlatform}.tar"/>
+        <tar destfile="${distributionDir}/PreCTS_${version}_${archPlatform}.tar"
+            basedir="${localDir}" />
+    </target>
+
+    <target name="tarLinuxX86" depends="distLinuxX86">
+        <antcall target="tarArtifacts"/>
+    </target>
+
+    <target name="tarLinuxX64" depends="distLinuxX64">
+        <antcall target="tarArtifacts"/>
+    </target>
+
+    <target name="tarWindowsX86" depends="distWindowsX86">
+        <antcall target="tarArtifacts"/>
+    </target>
+
+    <target name="tarWindowsX64" depends="distWindowsX64">
+        <antcall target="tarArtifacts"/>
+    </target>
+
+    <target name="dist">
+        <antcall target="clean"/>
+        <antcall target="distLinuxX86"/>
+
+        <antcall target="clean"/>
+        <antcall target="distLinuxX64"/>
+
+        <antcall target="clean"/>
+        <antcall target="distWindowsX86"/>
+
+        <antcall target="clean"/>
+        <antcall target="distWindowsX64"/>
+
+        <delete dir="${distributionDir}"/>
+        <antcall target="tarLinuxX86"/>
+        <antcall target="tarLinuxX64"/>
+        <antcall target="tarWindowsX86"/>
+        <antcall target="tarWindowsX64"/>
+
+        <antcall target="clean"/>
+        <echo message="Done."/>
+    </target>
+
+</project>

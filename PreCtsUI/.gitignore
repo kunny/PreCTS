@@ -1,3 +1,5 @@
 build/
 .gradle
 *.info
+distributions/
+artifacts/
