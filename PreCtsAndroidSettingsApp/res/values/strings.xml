@@ -4,5 +4,11 @@
     <string name="app_name">PreCTS</string>
     <string name="msg_disabling_sync_settings">Disabling sync settings...</string>
     <string name="msg_disabled_sync_settings">Disabled sync settings.</string>
+    <string name="enable_sync">Enable sync</string>
+    <string name="disable_sync">Disable sync</string>
+    <string name="title_activity_enable_sync">EnableSyncActivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="msg_enabled_sync_settings">Enabled sync settings.</string>
 
 </resources>

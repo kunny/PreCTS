@@ -6,14 +6,14 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".MainActivity" >
+    tools:context=".EnableSyncActivity" >
 
     <TextView
-        android:layout_centerInParent="true"
-        android:textAppearance="?android:attr/textAppearanceLarge"
         android:id="@+id/tv_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/msg_disabling_sync_settings" />
+        android:layout_centerInParent="true"
+        android:text="@string/msg_enabled_sync_settings"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
 </RelativeLayout>
