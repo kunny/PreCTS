@@ -113,7 +113,7 @@
         </jar>
         
         <echo file="${localDir}/PreCTS_${archPlatform}" append="true">
-            javaw -jar PreCTS_${archPlatform}.jar
+            java -jar PreCTS_${archPlatform}.jar
         </echo>
         <chmod file="${localDir}/PreCTS_${archPlatform}" perm="544"/>
 
@@ -141,7 +141,7 @@
         </jar>
         
         <echo file="${localDir}/PreCTS_${archPlatform}" append="true">
-            javaw -jar PreCTS_${archPlatform}.jar
+            java -jar PreCTS_${archPlatform}.jar
         </echo>
         <chmod file="${localDir}/PreCTS_${archPlatform}" perm="544"/>
 
