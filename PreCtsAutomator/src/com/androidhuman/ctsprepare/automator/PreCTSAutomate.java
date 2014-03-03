@@ -8,6 +8,8 @@ import java.io.IOException;
 import org.json.JSONException;
 
 import android.os.Build;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 
 import com.android.uiautomator.core.Configurator;
 import com.android.uiautomator.core.UiDevice;
@@ -18,6 +20,8 @@ import com.android.uiautomator.core.UiSelector;
 import com.android.uiautomator.testrunner.UiAutomatorTestCase;
 
 public class PreCTSAutomate extends UiAutomatorTestCase{
+	
+	private static final int MAX_RETRY = 5;
 
 	public void testActivateDeviceAdmin() throws UiObjectNotFoundException {
 		// Get installed device admin listview
@@ -56,6 +60,7 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 			Configurator config = Configurator.getInstance();
 			config.setWaitForSelectorTimeout(2000); // Set UI wait timeout for 2 seconds
 		}
+		int numRetry = 0;
 		
 		File file = new File("/data/local/tmp/wifi.info");
 		
@@ -76,37 +81,53 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 			wifiSwitch.clickAndWaitForNewWindow();
 		}
 		
-		UiScrollable wifiList = new UiScrollable(new UiSelector().className("android.widget.ListView"));
+		// For tablets
+		UiScrollable wifiList = null;
+		
+		wifiList = new UiScrollable(new UiSelector().className(ListView.class).textContains("Network connections"));
+		// Double column mode
+		wifiList = new UiScrollable(new UiSelector().className(ListView.class).instance(1));
+		
+		if(!wifiList.exists()){
+			// Single column mode
+			wifiList = new UiScrollable(new UiSelector().className(ListView.class));
+		}
+				
+		System.out.println("Wifi AP count : "+wifiList.getChildCount());
+		
 		UiObject ap = null;
+		
 		while(true){
 			try{
 				// Select AP
+				System.out.println("Trying to find AP : "+apData.apName);
 				ap = wifiList.getChildByText(
 						new UiSelector().className("android.widget.LinearLayout"), apData.apName);
 				break;
 			}catch(UiObjectNotFoundException e){
+				if(numRetry>MAX_RETRY){
+					fail("Didn't find AP. Cancel Wi-Fi setting.");
+				}
 				UiDevice.getInstance().waitForWindowUpdate("com.android.settings", 1500);
 			}
 			skipAdditionalDialogsForWifi();
+			numRetry++;
 		}
 		ap.clickAndWaitForNewWindow();
 		
-		int count = 0;
+		numRetry = 0;
 		while(true){
 			try{
 				UiObject editText = new UiObject(new UiSelector().className("android.widget.EditText"));
 				editText.setText(apData.password); // Enter password
 				break;
-			}catch(UiObjectNotFoundException e){
-				count++;
-				System.out.println("Dialog found. trying to dismiss...");
-				if(count>3){
+			}catch(UiObjectNotFoundException e){	
+				if(numRetry>MAX_RETRY){
 					fail("Could not find authentication dialog.");
 				}
 			}
-			
 			skipAdditionalDialogs();
-		
+			numRetry++;
 		}
 		
 		UiObject connectButton = new UiObject(new UiSelector().text("Connect"));

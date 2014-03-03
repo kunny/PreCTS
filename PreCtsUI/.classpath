@@ -13,6 +13,7 @@
 	<classpathentry kind="lib" path="libs/org.eclipse.text_3.5.101.v20110928-1504.jar"/>
 	<classpathentry kind="lib" path="libs/org.eclipse.ui.forms_3.5.101.v20111011-1919.jar"/>
 	<classpathentry kind="lib" path="libs/org.eclipse.ui.workbench_3.7.1.v20120104-1859.jar"/>
-	<classpathentry kind="lib" path="swt_lib/swt-4.3-gtk-linux-x86_64.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="swt_lib/swt-4.3-gtk-linux-x64.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
