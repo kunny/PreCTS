@@ -108,7 +108,7 @@ public class Main {
 	protected void createContents() {
 		shlPrects = new Shell();
 		shlPrects.setSize(702, 643);
-		shlPrects.setText("Pre-CTS 1.3 (20140121)");
+		shlPrects.setText("Pre-CTS 1.3 (20140303)");
 		
 		Group grpOptions = new Group(shlPrects, SWT.NONE);
 		grpOptions.setText("File / Installation");

@@ -8,7 +8,6 @@ import java.io.IOException;
 import org.json.JSONException;
 
 import android.os.Build;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.android.uiautomator.core.Configurator;
@@ -92,11 +91,23 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 			// Single column mode
 			wifiList = new UiScrollable(new UiSelector().className(ListView.class));
 		}
-				
-		System.out.println("Wifi AP count : "+wifiList.getChildCount());
 		
+		numRetry=0;
+		while(true){
+			try{
+				System.out.println("Wifi AP count : "+wifiList.getChildCount());
+				break;
+			}catch(Exception e){
+				if(numRetry>MAX_RETRY){
+					fail();
+				}
+				System.out.println("Skipping dialog...");
+				skipAdditionalDialogsForWifi();
+			}
+		}
 		UiObject ap = null;
 		
+		numRetry=0;
 		while(true){
 			try{
 				// Select AP
