@@ -24,8 +24,14 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 
 	public void testActivateDeviceAdmin() throws UiObjectNotFoundException {
 		// Get installed device admin listview
-		UiScrollable deviceAdminList = 
-				new UiScrollable(new UiSelector().className("android.widget.ListView"));
+		
+		UiScrollable deviceAdminList = null;
+		
+		// Try double-column case first
+		deviceAdminList = new UiScrollable(new UiSelector().className(ListView.class).instance(1));
+		if(!deviceAdminList.exists()){
+			deviceAdminList = new UiScrollable(new UiSelector().className("android.widget.ListView"));
+		}
 		
 		// First device admin receiver
 		UiObject receiver1 = 
@@ -80,11 +86,9 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 			wifiSwitch.clickAndWaitForNewWindow();
 		}
 		
-		// For tablets
 		UiScrollable wifiList = null;
 		
-		wifiList = new UiScrollable(new UiSelector().className(ListView.class).textContains("Network connections"));
-		// Double column mode
+		// Try double column mode first
 		wifiList = new UiScrollable(new UiSelector().className(ListView.class).instance(1));
 		
 		if(!wifiList.exists()){
@@ -117,7 +121,7 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 				break;
 			}catch(UiObjectNotFoundException e){
 				if(numRetry>MAX_RETRY){
-					fail("Didn't find AP. Cancel Wi-Fi setting.");
+					fail("Can't find AP. Cancel Wi-Fi setting.");
 				}
 				UiDevice.getInstance().waitForWindowUpdate("com.android.settings", 1500);
 			}
@@ -148,7 +152,15 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 	}
 	
 	public void testSetTimeout() throws UiObjectNotFoundException{
-		UiScrollable settingsList = new UiScrollable(new UiSelector().className("android.widget.ListView"));
+		UiScrollable settingsList = null;
+		
+		// Try double column case first
+		settingsList = new UiScrollable(new UiSelector().className(ListView.class).instance(1));
+		if(!settingsList.exists()){
+			// If current layout is single-column case
+			new UiScrollable(new UiSelector().className("android.widget.ListView"));
+		}
+		
 		UiObject timeout = settingsList.getChildByText(new UiSelector().className("android.widget.LinearLayout"), "Screen timeout");
 		// Select display timeout
 		timeout.clickAndWaitForNewWindow();

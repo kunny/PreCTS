@@ -203,6 +203,7 @@
         <delete file="${distributionDir}/PreCTS_${version}_${archPlatform}.tar"/>
         <tar destfile="${distributionDir}/PreCTS_${version}_${archPlatform}.tar"
             basedir="${localDir}" />
+
     </target>
 
     <target name="tarLinuxX86" depends="distLinuxX86">
