@@ -8,6 +8,7 @@ import java.io.IOException;
 import org.json.JSONException;
 
 import android.os.Build;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.android.uiautomator.core.Configurator;
@@ -31,6 +32,7 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 		deviceAdminList = new UiScrollable(new UiSelector().className(ListView.class).instance(1));
 		if(!deviceAdminList.exists()){
 			deviceAdminList = new UiScrollable(new UiSelector().className("android.widget.ListView"));
+			System.out.println("Single column mode detected");
 		}
 		
 		// First device admin receiver
@@ -81,11 +83,21 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 			fail(e.getMessage());
 		}
 		
-		UiObject wifiSwitch = new UiObject(new UiSelector().className("android.widget.Switch"));
-		if(!wifiSwitch.isChecked()){
-			wifiSwitch.clickAndWaitForNewWindow();
+		numRetry=0;
+		while(true){
+			try{
+				UiObject wifiSwitch = new UiObject(new UiSelector().className("android.widget.Switch"));
+				if(!wifiSwitch.isChecked()){
+					wifiSwitch.clickAndWaitForNewWindow();
+				}
+				break;
+			}catch(UiObjectNotFoundException e){
+				if(numRetry>2){
+					break; // Fallthroungh to next level
+				}
+				skipAdditionalDialogsForWifi();
+			}
 		}
-		
 		UiScrollable wifiList = null;
 		
 		// Try double column mode first
@@ -117,7 +129,7 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 				// Select AP
 				System.out.println("Trying to find AP : "+apData.apName);
 				ap = wifiList.getChildByText(
-						new UiSelector().className("android.widget.LinearLayout"), apData.apName);
+						new UiSelector().className(LinearLayout.class), apData.apName);
 				break;
 			}catch(UiObjectNotFoundException e){
 				if(numRetry>MAX_RETRY){
@@ -134,6 +146,7 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 		while(true){
 			try{
 				UiObject editText = new UiObject(new UiSelector().className("android.widget.EditText"));
+				editText.click();
 				editText.setText(apData.password); // Enter password
 				break;
 			}catch(UiObjectNotFoundException e){	
@@ -145,8 +158,20 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 			numRetry++;
 		}
 		
-		UiObject connectButton = new UiObject(new UiSelector().text("Connect"));
-		connectButton.clickAndWaitForNewWindow();
+		numRetry = 0;
+		while(true){
+			try{
+				UiObject connectButton = new UiObject(new UiSelector().text("Connect"));
+				connectButton.clickAndWaitForNewWindow();
+				break;
+			}catch(UiObjectNotFoundException e){
+				if(numRetry>MAX_RETRY){
+					fail("Could not find Connect button.");
+				}
+				skipAdditionalDialogs();
+				numRetry++;
+			}
+		}
 		
 		UiDevice.getInstance().pressHome();
 	}
@@ -158,10 +183,13 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 		settingsList = new UiScrollable(new UiSelector().className(ListView.class).instance(1));
 		if(!settingsList.exists()){
 			// If current layout is single-column case
-			new UiScrollable(new UiSelector().className("android.widget.ListView"));
+			settingsList = new UiScrollable(new UiSelector().className("android.widget.ListView"));
 		}
 		
-		UiObject timeout = settingsList.getChildByText(new UiSelector().className("android.widget.LinearLayout"), "Screen timeout");
+		UiObject timeout = 
+				settingsList.getChildByText(
+						new UiSelector().className(LinearLayout.class), "Screen timeout");
+		
 		// Select display timeout
 		timeout.clickAndWaitForNewWindow();
 		
@@ -303,7 +331,7 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 	
 	private void skipAdditionalDialogs(){
 		UiObject dismissDlgBtn = null;
-		
+		System.out.println("Trying to dismiss dialogs..");
 		try{
 			// If input method dialog popup showed up
 			dismissDlgBtn = new UiObject(new UiSelector().text("OK"));
@@ -343,7 +371,6 @@ public class PreCTSAutomate extends UiAutomatorTestCase{
 			dismissDlgBtn = new UiObject(new UiSelector().text("Dismiss"));
 			dismissDlgBtn.clickAndWaitForNewWindow(1000);
 		}catch(UiObjectNotFoundException e){}
-	
 		
 	}
 	
